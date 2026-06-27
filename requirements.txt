@@ -1,0 +1,15 @@
+# =============================================================================
+# requirements.txt — Jarvis Vision V1
+# =============================================================================
+# Install all dependencies with:
+#     pip install -r requirements.txt
+# =============================================================================
+
+# Computer vision — webcam capture and frame rendering
+opencv-python>=4.9.0
+
+# Hand landmark detection (Tasks API — compatible with 0.10.30+)
+mediapipe>=0.10.30
+
+# Process inspection — check if apps are already running
+psutil>=6.0.0
