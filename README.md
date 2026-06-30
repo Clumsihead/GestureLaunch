@@ -25,7 +25,7 @@ For users who prefer a manual trigger, GestureLaunch also includes a **global ke
 
 # 🎥 Demo
 
-> *(Replace this section with a GIF or short video after recording one.)*
+
 
 ```
 Camera Ready...
