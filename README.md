@@ -1,217 +1,316 @@
-# 👋 GestureLaunch
+# 🤖 Jarvis Vision V1
 
-> **Skip the clicks. Show a 👍. Launch your workspace.**
+A lightweight Windows desktop assistant that watches your webcam for a **👍 Thumbs Up** gesture and instantly launches your full daily workspace — no clicks, no voice, no fuss.
 
-GestureLaunch is a **computer vision workspace launcher** built with **Python**, **OpenCV**, and **MediaPipe**.
+> Show your thumb. Watch your world open.
 
-Instead of manually opening your everyday applications, GestureLaunch recognizes a simple **👍 thumbs-up gesture** through your webcam and launches your configured workspace automatically.
-
-For users who prefer a manual trigger, GestureLaunch also includes a **global keyboard shortcut** (`Ctrl + Alt + J`) that launches the exact same workspace instantly.
-
----
-
-# ✨ Features
-
-* 👍 Real-time thumbs-up gesture recognition
-* 🚀 Launch multiple desktop applications with a single gesture
-* ⌨️ Manual workspace launcher using **Ctrl + Alt + J**
-* 🛑 Prevent duplicate application launches
-* ⏳ Configurable cooldown system
-* ⚙️ Simple configuration through `config.py`
-* 👁️ Live webcam preview
-* 🖥️ Built specifically for Windows
+![Python](https://img.shields.io/badge/Python-3.12%2B-blue?style=flat-square&logo=python)
+![OpenCV](https://img.shields.io/badge/OpenCV-4.9%2B-green?style=flat-square)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-0.10.30%2B-orange?style=flat-square)
+![Platform](https://img.shields.io/badge/Platform-Windows-informational?style=flat-square&logo=windows)
 
 ---
 
-# 🎥 Demo
+## 📋 Table of Contents
 
+- [What It Does](#-what-it-does)
+- [Project Structure](#-project-structure)
+- [Requirements](#-requirements)
+- [Installation](#-installation)
+- [Configuration](#-configuration)
+- [How to Run](#-how-to-run)
+- [Autostart on Boot](#-autostart-on-boot)
+- [Keyboard Shortcut](#-keyboard-shortcut-ctrlaltj)
+- [How Gesture Detection Works](#-how-gesture-detection-works)
+- [The Preview Window](#-the-preview-window)
+- [Troubleshooting](#-troubleshooting)
 
+---
+
+## ✨ What It Does
+
+| Step | What Happens |
+|------|-------------|
+| 1 | Jarvis starts and opens your webcam |
+| 2 | It watches for a **👍 Thumbs Up** gesture |
+| 3 | Gesture confirmed → workspace launches |
+| 4 | Brave, ChatGPT, Claude Desktop, Spotify open |
+| 5 | Jarvis auto-closes after **45 seconds** |
+| 6 | Optionally auto-launches on every Windows login |
+| 7 | Press **Ctrl+Alt+J** anytime to launch manually |
+
+---
+
+## 📁 Project Structure
 
 ```
-Camera Ready...
-
-Waiting for 👍
-
-        👍
-
-Gesture Detected!
-
-Launching Workspace...
-
-✓ Brave
-✓ ChatGPT
-✓ Claude
-✓ Spotify
-
-Workspace Ready 🚀
-```
-
----
-
-# 📂 Project Structure
-
-```text
-GestureLaunch/
-
-├── config.py
-├── detector.py
-├── launcher.py
-├── main.py
-├── launch_workspace.bat
-├── setup_hotkey.py
-├── setup_autostart.py
-├── requirements.txt
-└── README.md
+JarvisVision/
+│
+├── main.py                 ← Entry point — run this
+├── detector.py             ← Webcam + MediaPipe gesture logic
+├── launcher.py             ← App launching + duplicate checking
+├── config.py               ← ⚙️  ALL your settings live here
+├── launch_workspace.bat    ← Standalone bat to open all apps
+├── setup_autostart.py      ← Adds Jarvis to Windows Startup
+├── setup_hotkey.py         ← Assigns Ctrl+Alt+J shortcut
+├── requirements.txt        ← Python dependencies
+└── README.md               ← This file
 ```
 
 ---
 
-# 🛠 Technologies Used
+## 🖥️ Requirements
 
-* Python
-* OpenCV
-* MediaPipe
-* psutil
+- **Windows 10 / 11**
+- **Python 3.12+** → [Download](https://www.python.org/downloads/)
+- **A webcam** (built-in or USB)
+- The apps you want to launch already installed:
+  - [Brave Browser](https://brave.com)
+  - [ChatGPT Desktop](https://openai.com/chatgpt/download/)
+  - [Claude Desktop](https://claude.ai/download)
+  - [Spotify](https://www.spotify.com/download)
 
 ---
 
-# 🚀 Installation
+## 📦 Installation
 
-Clone the repository
+### 1 — Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/GestureLaunch.git
-cd GestureLaunch
+git clone https://github.com/your-username/JarvisVision.git
+cd JarvisVision
 ```
 
-Install the required packages
+### 2 — Create a virtual environment (recommended)
 
 ```bash
-pip install -r requirements.txt
+python -m venv venv
+venv\Scripts\activate
 ```
+
+### 3 — Install dependencies
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+> **Note:** On first run, Jarvis will automatically download the MediaPipe hand landmark model (~18 MB) from Google and save it locally. This only happens once.
 
 ---
 
-# ⚙️ Configuration
+## ⚙️ Configuration
 
-Open **config.py** and configure:
+> This is the most important step. Open `config.py` and update the values to match your system before running anything.
 
-* Brave Browser path
-* Claude Desktop path
-* Spotify path
-* Camera index
-* Cooldown duration
-* Gesture confirmation frames
+### 🔧 Step 1 — Find your app paths
 
-ChatGPT launches through the Windows Start Menu, so no executable path is required.
+Run these commands in PowerShell to find the correct paths:
+
+```powershell
+# Find Brave
+ls "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+
+# Find Claude Desktop AppID (if installed from Microsoft Store)
+Get-StartApps | Where-Object {$_.Name -like "*Claude*"}
+
+# Find Spotify shortcut
+ls "$env:APPDATA\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
+```
+
+### 🔧 Step 2 — Edit `config.py`
+
+Open `config.py` and change these values:
+
+```python
+# ─── Brave Browser ────────────────────────────────────────────────────────────
+# Full path to brave.exe on your machine
+BRAVE_PATH = r"C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+
+
+# ─── ChatGPT Desktop ──────────────────────────────────────────────────────────
+# ChatGPT is a Store app — the shell command below works without a path
+CHATGPT_USE_SHELL = True
+CHATGPT_SHELL_CMD = "start ChatGPT"
+
+
+# ─── Claude Desktop ───────────────────────────────────────────────────────────
+# If Claude is installed from the Microsoft Store (UWP app):
+#   1. Run in PowerShell:  Get-StartApps | Where-Object {$_.Name -like "*Claude*"}
+#   2. Copy the AppID from the output (e.g. Claude_pzs8sxrjxfjjc!Claude)
+#   3. Leave CLAUDE_PATH empty and set CLAUDE_USE_SHELL = True
+#
+CLAUDE_PATH      = ""           # leave empty for Store/UWP installs
+CLAUDE_USE_SHELL = True
+CLAUDE_SHELL_CMD = "start shell:AppsFolder\\Claude_pzs8sxrjxfjjc!Claude"
+#                                              ^^^^^^^^^^^^^^^^^^^^^^^^
+#                                              Replace with YOUR AppID
+
+
+# ─── Spotify ──────────────────────────────────────────────────────────────────
+# Point this to your Spotify shortcut (.lnk) or executable (.exe)
+SPOTIFY_PATH = r"C:\Users\YOUR_USERNAME\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
+#                       ^^^^^^^^^^^^^
+#                       Replace with your Windows username
+
+
+# ─── Process names (used to skip already-running apps) ────────────────────────
+BRAVE_PROCESS_NAME   = "brave.exe"
+CHATGPT_PROCESS_NAME = "ChatGPT.exe"
+CLAUDE_PROCESS_NAME  = "claude.exe"
+SPOTIFY_PROCESS_NAME = "Spotify.exe"
+
+
+# ─── Camera ───────────────────────────────────────────────────────────────────
+CAMERA_INDEX = 0    # 0 = default webcam. Change to 1, 2… if you have multiple.
+
+
+# ─── Timing ───────────────────────────────────────────────────────────────────
+COOLDOWN_SECONDS     = 15   # seconds before gesture re-arms after launching
+GESTURE_CONFIRM_FRAMES = 8  # frames gesture must be held (reduces false triggers)
+```
+
+### 🔧 Step 3 — Edit `launch_workspace.bat`
+
+Open `launch_workspace.bat` and update the two hardcoded paths:
+
+```bat
+:: Line 14 — Brave path
+start "" "C:\Program Files\BraveSoftware\Brave-Browser\Application\brave.exe"
+
+:: Line 30 — Spotify shortcut path
+start "" "C:\Users\YOUR_USERNAME\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Spotify.lnk"
+```
+
+Replace `YOUR_USERNAME` with your actual Windows username (same one you see in `C:\Users\`).
 
 ---
 
-# ▶️ Usage
-
-Start GestureLaunch
+## ▶️ How to Run
 
 ```bash
+# Make sure you are in the project folder
+cd JarvisVision
+
+# Activate virtual environment if you created one
+venv\Scripts\activate
+
+# Launch Jarvis
 python main.py
 ```
 
-GestureLaunch will:
-
-1. Initialize the webcam.
-2. Detect your hand in real time.
-3. Wait for a 👍 gesture.
-4. Launch your configured workspace.
-5. Enter cooldown before listening again.
-
----
-
-# ⌨️ Manual Launcher
-
-GestureLaunch also includes **launch_workspace.bat**.
-
-This script launches the exact same workspace without using the webcam and is intended to be used with the included keyboard shortcut setup.
-
-Default shortcut:
+You will see:
 
 ```
-Ctrl + Alt + J
+  Initializing camera...
+  Camera Ready.
+  Waiting for thumbs up...  (auto-closing in 45s)
 ```
 
-This gives you two ways to launch your workspace:
+A preview window opens showing your webcam feed. Hold up a **👍** and your workspace launches. Jarvis auto-closes after 45 seconds.
 
-* 👋 Gesture Mode
-* ⌨️ Keyboard Shortcut Mode
-
-Both methods launch the same configured applications.
+**To quit early:** press `Q` in the preview window or `Ctrl+C` in the terminal.
 
 ---
 
-# 🧠 How It Works
+## 🚀 Autostart on Boot
 
-GestureLaunch uses **MediaPipe Hands** to detect **21 hand landmarks** from the webcam.
+Want Jarvis to launch automatically every time you log into Windows?
 
-Instead of using a trained gesture classifier, it analyzes the landmark positions to determine whether:
+```bash
+python setup_autostart.py
+```
 
-* 👍 Thumb is extended
-* 👇 Index finger is folded
-* 👇 Middle finger is folded
-* 👇 Ring finger is folded
-* 👇 Pinky finger is folded
+Output you should see:
+```
+  [OK]  Batch launcher created: ...\start_jarvis.bat
+  [OK]  Startup shortcut created: ...\Startup\JarvisVision.lnk
+```
 
-When the gesture is held for several consecutive frames, the workspace launcher is triggered.
-
-This lightweight geometric approach keeps the project responsive while avoiding the need for custom machine learning models.
-
----
-
-# 🗺️ Roadmap
-
-## Current
-
-* ✅ Gesture recognition
-* ✅ Workspace launcher
-* ✅ Keyboard shortcut launcher
-* ✅ Duplicate process prevention
-* ✅ Cooldown system
-
-## Planned
-
-* ⬜ Face recognition (owner verification)
-* ⬜ Transparent HUD overlay
-* ⬜ System tray application
-* ⬜ Custom gesture support
-* ⬜ Multiple workspace profiles
-* ⬜ Plugin system
-* ⬜ AI integration
+**To remove autostart:**
+```bash
+python setup_autostart.py remove
+```
 
 ---
 
-# 💡 Why I Built This
+## ⌨️ Keyboard Shortcut (Ctrl+Alt+J)
 
-This project started with a simple question:
+Want to launch your workspace instantly from anywhere without using the camera?
 
-> **Can I launch my workspace without clicking through multiple applications every day?**
+```bash
+python setup_hotkey.py
+```
 
-The original idea relied on sound detection using claps and finger snaps. However, modern laptops aggressively filter those sounds through built-in noise suppression, making the approach unreliable.
+This creates a **"Jarvis Workspace"** shortcut on your Desktop and assigns `Ctrl+Alt+J` to it globally. Press it from anywhere in Windows — even when Jarvis isn't running — to open all your apps.
 
-Instead of fighting the hardware, I switched to computer vision.
-
-The result is GestureLaunch—a lightweight workspace launcher that uses a single thumbs-up gesture (or a keyboard shortcut) to instantly open my daily development environment.
-
----
-
-# 🤝 Contributing
-
-Suggestions, improvements, and pull requests are always welcome.
-
-If you have an idea that could make GestureLaunch better, feel free to open an issue or submit a pull request.
+> If the hotkey doesn't work immediately, log out and back in once to let Windows register it.
 
 ---
 
-# 📄 License
+## 👁️ How Gesture Detection Works
 
-This project is licensed under the MIT License.
+Jarvis uses **MediaPipe Hands** to map 21 landmark points on your hand in real time. The thumbs-up check is pure geometry — no extra ML model needed.
+
+```
+Hand landmarks used:
+
+   THUMB_TIP  (4)  ← must be above THUMB_IP and THUMB_MCP
+   THUMB_IP   (3)
+   THUMB_MCP  (2)
+
+   INDEX_TIP  (8)  ← must be below INDEX_PIP   (finger folded)
+   MIDDLE_TIP (12) ← must be below MIDDLE_PIP  (finger folded)
+   RING_TIP   (16) ← must be below RING_PIP    (finger folded)
+   PINKY_TIP  (20) ← must be below PINKY_PIP   (finger folded)
+```
+
+**Thumbs Up = thumb tip pointing up + all 4 fingers curled down**
+
+To prevent accidental triggers, the gesture must be held for **8 consecutive frames** (~0.25 seconds). A green progress bar in the preview window shows accumulation.
+
+### Tuning sensitivity
+
+| Feeling | Fix |
+|---------|-----|
+| Triggers too easily | Increase `GESTURE_CONFIRM_FRAMES` in `config.py` |
+| Hard to trigger | Decrease `GESTURE_CONFIRM_FRAMES` or `MIN_DETECTION_CONFIDENCE` |
+| Detects wrong hand | Make sure only one hand is visible |
 
 ---
 
-⭐ If you found this project interesting, consider giving it a star!
+## 🖼️ The Preview Window
+
+| Element | What it shows |
+|---------|--------------|
+| Green skeleton | MediaPipe hand landmarks drawn live |
+| Bottom bar | Status: *Waiting…* / *Thumbs Up Detected!* / *Cooldown…* |
+| Top-left | JARVIS V1 label |
+| Top-right | Cooldown countdown (when active) |
+| Bottom-right | Auto-close countdown in seconds |
+| Green bar | Gesture confirmation progress |
+
+---
+
+## 🔧 Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| `No module named 'mediapipe'` | Run `python -m pip install -r requirements.txt` |
+| `Cannot open camera at index 0` | Set `CAMERA_INDEX = 1` in `config.py` |
+| Wrong app opens (e.g. CLI instead of Desktop) | Check process name with Task Manager and update the path in `config.py` |
+| Claude CLI opens instead of Claude Desktop | Use the UWP shell command — see [Configuration](#-configuration) |
+| Gesture not detected | Ensure good lighting; keep thumb clearly pointing upward |
+| Apps open twice | Check `BRAVE_PROCESS_NAME` etc. match what Task Manager shows |
+| Hotkey Ctrl+Alt+J not working | Log out and back in; hotkeys need a session restart to register |
+| Model download fails | Download `hand_landmarker.task` manually from [Google](https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/latest/hand_landmarker.task) and place it next to `detector.py` |
+| PowerShell script blocked | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` in PowerShell |
+
+---
+
+## 📄 License
+
+MIT — do whatever you want with it.
+
+---
+
+*Built with Python · OpenCV · MediaPipe · psutil*
